@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/heuraniumc"
+    android:gravity="bottom"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:fontFamily="@font/ka1"
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="569dp"
+        android:layout_marginTop="50dp"
+        android:gravity="center|top"
+        android:outlineSpotShadowColor="@color/design_default_color_primary"
+        android:shadowColor="@color/black"
+        android:shadowDx="10"
+        android:shadowDy="10"
+        android:shadowRadius="10"
+        android:text="Welcome to cool game!"
+        android:textColor="#FF0808"
+        android:textSize="33dp"
+        android:textStyle="bold" />
+
+    <Button
+        android:fontFamily="@font/ka1"
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="50dp"
+        android:backgroundTint="@color/design_default_color_error"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="Play"
+        android:textSize="20dp"
+        android:textStyle="bold" />
+
+</LinearLayout>
