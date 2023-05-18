@@ -51,7 +51,7 @@ public class GameActivity extends AppCompatActivity {
                     });
 
                     try {
-                        Thread.sleep(16); // Adjust this value to control the game's frame rate
+                        Thread.sleep(16);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -60,7 +60,7 @@ public class GameActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void renderText(){
+    private void renderText() {
         TextView tvPoints = findViewById(R.id.points);
         tvPoints.setText(Integer.toString(points));
 
@@ -69,10 +69,31 @@ public class GameActivity extends AppCompatActivity {
 
         TextView tvCrabsLeft = findViewById(R.id.crabsleft);
         tvCrabsLeft.setText(Integer.toString(crabs_left));
+
+        ConstraintLayout layout = findViewById(R.id.crab_display);
+        List<Crab> crabsToRemove = new ArrayList<>(); // Store crabs to be removed
+
+        for (Crab crab : crabs) {
+            long lifespan = crab.getLifespan();
+            if (lifespan >= 5000 && !crab.isClicked()) {
+                layout.removeView(crab.getView());
+                crabsToRemove.add(crab);
+                timer.removeTime(10000);
+            }
+        }
+
+        crabs.removeAll(crabsToRemove); // Remove the crabs from the main list
+
+        for (Crab crabToRemove : crabsToRemove) {
+            crabs.remove(crabToRemove);
+        }
     }
+
+
 
     private void spawnCrabs(int count) {
         ConstraintLayout layout = findViewById(R.id.crab_display);
+
 
         layout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -88,6 +109,8 @@ public class GameActivity extends AppCompatActivity {
                         points++;
                         crabs_left--;
                         timer.addTime(1000);
+
+                        crab.setClicked(true); // Mark the crab as clicked
 
                         renderText();
                         // Perform screen shake animation
@@ -127,7 +150,7 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         timer.start();
-        spawnCrabs(5);
+        spawnCrabs(1);
     }
 
     @Override

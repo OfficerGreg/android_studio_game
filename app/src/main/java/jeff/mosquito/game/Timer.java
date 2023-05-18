@@ -63,6 +63,28 @@ public class Timer {
         countDownTimer.start();
     }
 
+    public void removeTime(long milliseconds){
+        remainingTimeMillis -= milliseconds;
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        countDownTimer = new CountDownTimer(remainingTimeMillis, 100) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                remainingTimeMillis = millisUntilFinished;
+                callback.onTick(millisUntilFinished);
+            }
+
+            @Override
+            public void onFinish() {
+                remainingTimeMillis = 0;
+                callback.onFinish();
+            }
+        };
+        remainingTimeDisplay = remainingTimeMillis;
+        countDownTimer.start();
+    }
+
     public long getRemainingTimeDisplay() {
         return remainingTimeDisplay;
     }

@@ -11,6 +11,9 @@ import java.util.Random;
 public class Crab {
     private ImageView imageView;
     private Animation shakeAnimation;
+    private long crabLifespan;
+    private boolean clicked;
+
 
     public Crab(Context context, ConstraintLayout layout) {
         imageView = new ImageView(context);
@@ -20,6 +23,7 @@ public class Crab {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         );
+        clicked = false;
 
         layoutParams.width = 200;
         layoutParams.height = 200;
@@ -35,6 +39,8 @@ public class Crab {
         shakeAnimation = AnimationUtils.loadAnimation(context, R.anim.shake_animation);
 
         layout.addView(imageView);
+        crabLifespan = System.currentTimeMillis();
+
     }
 
     public View getView() {
@@ -43,5 +49,16 @@ public class Crab {
 
     public void setOnClickListener(View.OnClickListener listener) {
         imageView.setOnClickListener(listener);
+    }
+
+    public void setClicked(boolean clicked) {
+        this.clicked = clicked;
+    }
+
+    public boolean isClicked() {
+        return clicked;
+    }
+    public long getLifespan() {
+        return System.currentTimeMillis() - crabLifespan;
     }
 }

@@ -3,17 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/heuraniumc"
+    android:background="@color/black"
     android:gravity="bottom"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <TextView
-        android:fontFamily="@font/ka1"
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="569dp"
         android:layout_marginTop="50dp"
+        android:fontFamily="@font/ka1"
         android:gravity="center|top"
         android:outlineSpotShadowColor="@color/design_default_color_primary"
         android:shadowColor="@color/black"
@@ -26,7 +26,6 @@
         android:textStyle="bold" />
 
     <Button
-        android:fontFamily="@font/ka1"
         android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,6 +33,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="50dp"
         android:backgroundTint="@color/design_default_color_error"
+        android:fontFamily="@font/ka1"
         android:gravity="center_horizontal|center_vertical"
         android:text="Play"
         android:textSize="20dp"
