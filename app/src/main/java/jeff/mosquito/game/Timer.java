@@ -85,6 +85,10 @@ public class Timer {
         countDownTimer.start();
     }
 
+    public long getRemainingTimeMillis() {
+        return remainingTimeMillis;
+    }
+
     public long getRemainingTimeDisplay() {
         return remainingTimeDisplay;
     }

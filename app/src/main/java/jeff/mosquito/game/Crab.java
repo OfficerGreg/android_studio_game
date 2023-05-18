@@ -67,6 +67,7 @@ public class Crab {
 
     }
 
+
     public View getView() {
         return imageView;
     }

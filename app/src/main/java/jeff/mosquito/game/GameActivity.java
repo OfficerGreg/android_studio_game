@@ -2,9 +2,15 @@ package jeff.mosquito.game;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -17,13 +23,13 @@ import java.util.List;
 public class GameActivity extends AppCompatActivity {
     private int round;
     private int points;
-    private int crabs_left;
-    private int round_crabs;
+    private int crabsLeft;
+    private int roundCrabs;
     private Timer timer;
     private List<Crab> crabs = new ArrayList<>();
-    
-
-    private volatile boolean is_running = true;
+    private long lastSpawnTime;
+    private long spawnInterval = 1000;
+    private volatile boolean isRunning = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,29 +38,24 @@ public class GameActivity extends AppCompatActivity {
         startGame();
 
         // Main game loop
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (is_running) {
-                    if(crabs_left <= 0){
-                        round++;
-                        round_crabs += 20;
-                        crabs_left = round_crabs;
-                    }
+        new Thread(() -> {
+            while (isRunning) {
+                if (crabsLeft <= 0) {
+                    round++;
+                    spawnInterval-=200;
+                    roundCrabs += 20;
+                    crabsLeft = roundCrabs;
+                }
 
-                    // Update game display
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            renderText();
-                        }
-                    });
+                runOnUiThread(this::renderText);
+                gameOver();
 
-                    try {
-                        Thread.sleep(16);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    Thread.sleep(16);
+                    spawnCrabs(1);
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
@@ -68,64 +69,78 @@ public class GameActivity extends AppCompatActivity {
         tvRound.setText("Round " + round);
 
         TextView tvCrabsLeft = findViewById(R.id.crabsleft);
-        tvCrabsLeft.setText(Integer.toString(crabs_left));
+        tvCrabsLeft.setText(Integer.toString(crabsLeft));
 
+        removeExpiredCrabs();
+    }
+
+    private void removeExpiredCrabs() {
         ConstraintLayout layout = findViewById(R.id.crab_display);
-        List<Crab> crabsToRemove = new ArrayList<>(); // Store crabs to be removed
+
+        List<Crab> expiredCrabs = new ArrayList<>(); // Store expired crabs
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         for (Crab crab : crabs) {
             long lifespan = crab.getLifespan();
             if (lifespan >= 5000 && !crab.isClicked()) {
+                expiredCrabs.add(crab);
                 layout.removeView(crab.getView());
-                crabsToRemove.add(crab);
                 timer.removeTime(10000);
-            }
-        }
-
-        crabs.removeAll(crabsToRemove); // Remove the crabs from the main list
-
-        for (Crab crabToRemove : crabsToRemove) {
-            crabs.remove(crabToRemove);
-        }
-    }
-
-
-
-    private void spawnCrabs(int count) {
-        ConstraintLayout layout = findViewById(R.id.crab_display);
-
-
-        layout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                for (int i = 0; i < count; i++) {
-                    Crab crab = new Crab(GameActivity.this, layout);
-
-                    // Add click listener to remove crab when clicked
-                    crab.setOnClickListener(v -> {
-                        spawnCrabs(1);
-                        layout.removeView(crab.getView());
-                        points++;
-                        crabs_left--;
-                        timer.addTime(1000);
-
-                        crab.setClicked(true); // Mark the crab as clicked
-
-                        renderText();
-                        // Perform screen shake animation
-                        Animation shakeAnimation = AnimationUtils.loadAnimation(GameActivity.this, R.anim.shake_animation);
-                        layout.startAnimation(shakeAnimation);
-                    });
-
-                    crabs.add(crab);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
                 }
             }
-        });
+        }
+
+        crabs.removeAll(expiredCrabs); // Remove the expired crabs from the main list
     }
 
+    private void spawnCrabs(int count) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastSpawnTime >= spawnInterval) {
+            lastSpawnTime = currentTime;
+            ConstraintLayout layout = findViewById(R.id.crab_display);
+
+            layout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    for (int i = 0; i < count; i++) {
+                        Crab crab = new Crab(GameActivity.this, layout);
+
+                        // Add click listener to remove crab when clicked
+                        crab.setOnClickListener(v -> {
+                            layout.removeView(crab.getView());
+                            points++;
+                            crabsLeft--;
+                            timer.addTime(200);
+
+                            crab.setClicked(true); // Mark the crab as clicked
+
+
+                            // Perform screen shake animation
+                            Animation shakeAnimation = AnimationUtils.loadAnimation(GameActivity.this, R.anim.shake_animation);
+                            layout.startAnimation(shakeAnimation);
+                        });
+
+                        crabs.add(crab);
+                    }
+                }
+            });
+        }
+    }
+    public void gameOver(){
+        TextView tvGameOver = findViewById(R.id.gameOverText);
+        tvGameOver.setVisibility(View.INVISIBLE);
+
+        if(timer.getRemainingTimeMillis() <= 0){
+            isRunning = false;
+            tvGameOver.setVisibility(View.VISIBLE);
+
+        }
+    }
     public void startGame() {
-        crabs_left = round_crabs;
+        crabsLeft = roundCrabs;
         round = 0;
         points = 0;
         timer = new Timer(60000, new Timer.TimerCallback() {
@@ -140,8 +155,8 @@ public class GameActivity extends AppCompatActivity {
 
                 ProgressBar pbTimeLeft = findViewById(R.id.timeLeft);
                 pbTimeLeft.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                pbTimeLeft.setMax((int)timer.getRemainingTimeDisplay() / 1000);
-                pbTimeLeft.setProgress((int)seconds);
+                pbTimeLeft.setMax((int) timer.getRemainingTimeDisplay() / 1000);
+                pbTimeLeft.setProgress((int) seconds);
             }
 
             @Override
@@ -150,13 +165,13 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         timer.start();
-        spawnCrabs(1);
+        spawnCrabs(5);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        is_running = false; // Stop the game loop
+        isRunning = false; // Stop the game loop
         if (timer != null) {
             timer.stop();
         }
