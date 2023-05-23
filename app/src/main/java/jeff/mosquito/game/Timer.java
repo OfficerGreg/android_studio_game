@@ -7,7 +7,6 @@ public class Timer {
     private long remainingTimeMillis;
     private CountDownTimer countDownTimer;
 
-
     private TimerCallback callback;
 
     public Timer(long durationMillis, TimerCallback callback) {

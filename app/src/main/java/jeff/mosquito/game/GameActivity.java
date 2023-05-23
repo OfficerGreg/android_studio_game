@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -31,10 +32,17 @@ public class GameActivity extends AppCompatActivity {
     private long spawnInterval = 1000;
     private volatile boolean isRunning = true;
 
+    private SharedPreferences sharedPreferences;
+    private static final String HIGH_SCORE_KEY = "high_score";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+
         startGame();
 
         // Main game loop
@@ -42,7 +50,7 @@ public class GameActivity extends AppCompatActivity {
             while (isRunning) {
                 if (crabsLeft <= 0) {
                     round++;
-                    spawnInterval-=200;
+                    spawnInterval -= 200;
                     roundCrabs += 20;
                     crabsLeft = roundCrabs;
                 }
@@ -110,13 +118,15 @@ public class GameActivity extends AppCompatActivity {
 
                         // Add click listener to remove crab when clicked
                         crab.setOnClickListener(v -> {
+                            if(!isRunning){
+                                return;
+                            }
                             layout.removeView(crab.getView());
                             points++;
                             crabsLeft--;
                             timer.addTime(200);
 
                             crab.setClicked(true); // Mark the crab as clicked
-
 
                             // Perform screen shake animation
                             Animation shakeAnimation = AnimationUtils.loadAnimation(GameActivity.this, R.anim.shake_animation);
@@ -129,16 +139,41 @@ public class GameActivity extends AppCompatActivity {
             });
         }
     }
-    public void gameOver(){
-        TextView tvGameOver = findViewById(R.id.gameOverText);
-        tvGameOver.setVisibility(View.INVISIBLE);
 
-        if(timer.getRemainingTimeMillis() <= 0){
+    public void gameOver() {
+        TextView tvGameOver = findViewById(R.id.gameOverText);
+        TextView tvHighScore = findViewById(R.id.highScore);
+
+        if (timer.getRemainingTimeMillis() <= 0) {
             isRunning = false;
             tvGameOver.setVisibility(View.VISIBLE);
+            tvHighScore.setVisibility(View.VISIBLE);
 
+            int currentHighScore = sharedPreferences.getInt(HIGH_SCORE_KEY, 0);
+
+            if (points > currentHighScore) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt(HIGH_SCORE_KEY, points);
+                editor.apply();
+                currentHighScore = points;
+            }
+
+            tvHighScore.setText(String.valueOf(currentHighScore));
+
+            tvGameOver.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Restart the game when the game over screen is clicked
+                    startGame();
+                    tvGameOver.setVisibility(View.INVISIBLE);
+                }
+            });
+        } else {
+            tvGameOver.setVisibility(View.INVISIBLE);
+            tvHighScore.setVisibility(View.INVISIBLE);
         }
     }
+
     public void startGame() {
         crabsLeft = roundCrabs;
         round = 0;
@@ -161,11 +196,28 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
-                // Handle timer finish, e.g., end the game
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        isRunning = false;
+                        gameOver();
+                    }
+                });
             }
         });
         timer.start();
         spawnCrabs(5);
+    }
+
+    private void restartGame() {
+        round = 0;
+        points = 0;
+        spawnInterval = 1000;
+        roundCrabs = 20;
+        crabsLeft = roundCrabs;
+        crabs.clear();
+        timer.start();
+        isRunning = true;
     }
 
     @Override

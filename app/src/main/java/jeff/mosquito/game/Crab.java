@@ -18,7 +18,6 @@ public class Crab {
     private long crabLifespan;
     private boolean clicked;
 
-
     public Crab(Context context, ConstraintLayout layout) {
         imageView = new ImageView(context);
         imageView.setImageResource(R.drawable.crab);

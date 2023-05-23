@@ -108,15 +108,33 @@
             android:id="@+id/gameOverText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="141dp"
-            android:layout_marginTop="204dp"
-            android:layout_marginEnd="188dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="197dp"
+            android:layout_marginEnd="18dp"
+            android:fontFamily="@font/ka1"
             android:text="GAMEOVER"
-            android:textColor="#FFFFFF"
+            android:textColor="#673AB7"
             android:textSize="50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/highScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="152dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="152dp"
+            android:layout_marginBottom="267dp"
+            android:fontFamily="@font/ka1"
+            android:text="10"
+            android:textColor="#F44336"
+            android:textSize="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/gameOverText" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
